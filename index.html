@@ -97,6 +97,7 @@
   .crew{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   .crew div{text-align:center;padding:16px 6px 12px;border-radius:22px;background:rgba(246,243,236,.05);border:1px solid var(--line)}
   .crew span{display:block;font-size:46px;line-height:1;margin-bottom:8px}
+  .crew img{display:block;width:84%;max-width:110px;height:auto;aspect-ratio:1/1;object-fit:cover;margin:0 auto 10px;border-radius:50%;box-shadow:0 0 0 2px rgba(242,192,120,.55),0 10px 24px rgba(0,0,0,.35)}
   .crew b{font-weight:800}
   .pass{border-radius:24px;overflow:hidden;border:1px solid var(--line);margin-bottom:12px;background:rgba(246,243,236,.05)}
   .pass .row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px 18px 10px;gap:10px}
@@ -282,7 +283,8 @@ function render(D){
   document.getElementById('rest').innerHTML=rest.map(function(f){return '<div class="ticket"><div class="day-pill">'+fmt(f.d,{weekday:'short'})+'</div><div class="ic">'+f.ic+'</div><div><b>'+esc(f.t)+'</b><small>'+f.s+'</small></div></div>';}).join('');
 
   // Crew + passes
-  document.getElementById('ppl').innerHTML=D.travellers.map(function(p){return '<div><span>'+face(p.name)+'</span><b>'+esc(p.name)+'</b></div>';}).join('');
+  var PHOTOS=['nick','iandra','herma','marco','kevin','dana'];
+  document.getElementById('ppl').innerHTML=D.travellers.map(function(p){var k=(p.name||'').toLowerCase().trim();var av=PHOTOS.indexOf(k)>-1?'<img src="crew/'+k+'.webp" alt="'+esc(p.name)+'" loading="lazy" width="256" height="256">':'<span>'+face(p.name)+'</span>';return '<div>'+av+'<b>'+esc(p.name)+'</b></div>';}).join('');
   function code(s){s=(s||'').toLowerCase();if(s.indexOf('schiphol')>-1||s.indexOf('amsterdam')>-1)return ['AMS','Amsterdam'];if(s.indexOf('rovaniemi')>-1)return ['RVN','Rovaniemi'];return [s.slice(0,3).toUpperCase(),s];}
   document.getElementById('fl').innerHTML=D.flights.filter(function(f){return /outbound|return/i.test(f.direction);}).map(function(f){var a=code(f.from),b=code(f.to);return '<div class="pass"><div class="row"><div><div class="code">'+a[0]+'</div><div class="city">'+esc(a[1])+'</div></div><div class="plane">✈</div><div class="r"><div class="code">'+b[0]+'</div><div class="city">'+esc(b[1])+'</div></div></div><div class="foot"><span>Date<b>'+fmt(f.date,{weekday:'short',day:'numeric',month:'short'})+'</b></span><span>Departs<b>'+esc(f.departure||'tbc')+'</b></span><span>Airline<b>'+esc(f.airline||'')+'</b></span><span>Bags<b>'+(f.baggage?'23 kg + cabin':'')+'</b></span></div></div>';}).join('');
 }
