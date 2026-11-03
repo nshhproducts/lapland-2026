@@ -118,11 +118,13 @@
   .loading{padding:40px 20px;text-align:center;color:var(--snow2);font-weight:700}
   .err{color:#FFB4C4;font-weight:700}
   .spacer{height:28px}
+  .snowfall{position:fixed;inset:0;pointer-events:none;z-index:4}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   @media (min-width:700px){.hero{height:560px}.hero .top,.hero .inner{max-width:640px;margin-left:auto;margin-right:auto;left:0;right:0}}
 </style>
 </head>
 <body>
+<canvas class="snowfall" id="snowfall" aria-hidden="true"></canvas>
 <section id="s-home" class="on">
   <div class="hero">
     <canvas id="aurora" aria-hidden="true"></canvas>
@@ -217,6 +219,16 @@ function sunTimes(dateIso,lat,lon){var d=new Date(dateIso+'T12:00:00Z');var n=Ma
     if(!reduce){t+=0.008;requestAnimationFrame(draw);}}
   draw();})();
 
+// Snowfall
+(function(){var c=document.getElementById('snowfall');if(!c)return;if(matchMedia('(prefers-reduced-motion: reduce)').matches){c.remove();return;}
+  var ctx=c.getContext('2d'),W,H,flakes=[],N=90;
+  function size(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*devicePixelRatio;}size();addEventListener('resize',size);
+  function mk(top){var r=(Math.random()*2.2+0.8)*devicePixelRatio;return {x:Math.random()*W,y:top?-10:Math.random()*H,r:r,v:(0.35+r/devicePixelRatio*0.28)*devicePixelRatio,d:Math.random()*6.28,s:(Math.random()*0.5+0.2)*devicePixelRatio,a:0.35+Math.random()*0.5};}
+  for(var i=0;i<N;i++)flakes.push(mk(false));
+  var t=0;function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#F6F3EC';t+=0.01;
+    for(var i=0;i<N;i++){var f=flakes[i];f.y+=f.v;f.x+=Math.sin(t*2+f.d)*f.s;if(f.y>H+10||f.x<-10||f.x>W+10)flakes[i]=mk(true);ctx.globalAlpha=f.a;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.28);ctx.fill();}
+    ctx.globalAlpha=1;requestAnimationFrame(draw);}
+  var hidden=false;document.addEventListener('visibilitychange',function(){hidden=document.hidden;});draw();})();
 var target=null;
 function tick(){if(!target)return;var diff=Math.max(0,target-Date.now());var s=Math.floor(diff/1000);var d=Math.floor(s/86400);document.getElementById('cd-d').textContent=d;document.getElementById('cd-unit').textContent=d===1?'day':'days';document.getElementById('cd-h').textContent=pad(Math.floor(s%86400/3600));document.getElementById('cd-m').textContent=pad(Math.floor(s%3600/60));document.getElementById('cd-s').textContent=pad(s%60);if(diff===0){document.getElementById('eyebrow').textContent='We are on our way';document.getElementById('cd-text').textContent='Have the best trip 🎉';}}
 
