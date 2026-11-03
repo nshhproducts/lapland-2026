@@ -25,8 +25,9 @@
   button{font:inherit;color:inherit}
 
   /* hero */
-  .hero{position:relative;height:min(78vh,620px);min-height:520px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px calc(28px);isolation:isolate}
-  .hero canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
+  .hero{position:relative;height:min(52vh,430px);min-height:360px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px calc(28px);isolation:isolate}
+  .hero #stars{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
+  .hero #aurora{position:absolute;inset:-30px;width:calc(100% + 60px);height:calc(100% + 60px);z-index:-1;filter:blur(14px) saturate(1.1);opacity:.75}
   .hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:55%;background:linear-gradient(180deg,rgba(14,27,46,0) 0%,rgba(14,27,46,.85) 60%,var(--night) 100%);z-index:-1}
   .hero .eyebrow{color:var(--snow2);font-weight:700;font-size:14px}
   .hero .num{font-size:clamp(96px,30vw,150px);line-height:.9;color:var(--snow);margin:6px 0 2px}
@@ -128,7 +129,7 @@
 <canvas class="snowfall" id="snowfall" aria-hidden="true"></canvas>
 <section id="s-home" class="on">
   <div class="hero">
-    <canvas id="aurora" aria-hidden="true"></canvas>
+    <canvas id="aurora" aria-hidden="true"></canvas><canvas id="stars" aria-hidden="true"></canvas>
     <div class="top"><b>Lapland 2026</b><span id="dates"></span></div>
     <div class="inner">
       <div class="eyebrow" id="eyebrow">Until we fly to Rovaniemi</div>
@@ -210,13 +211,13 @@ function loadWeather(cfg){var lat=String(cfg.accommodation_lat||cfg.weather_lat|
 function sunTimes(dateIso,lat,lon){var d=new Date(dateIso+'T12:00:00Z');var n=Math.floor((d-Date.UTC(2000,0,1,12))/864e5);var J=n+0.0009-lon/360;var M=(357.5291+0.98560028*J)%360,Mr=M*Math.PI/180;var C=1.9148*Math.sin(Mr)+0.02*Math.sin(2*Mr)+0.0003*Math.sin(3*Mr);var L=(M+C+180+102.9372)%360,Lr=L*Math.PI/180;var Jt=J+0.0053*Math.sin(Mr)-0.0069*Math.sin(2*Lr);var dec=Math.asin(Math.sin(Lr)*Math.sin(23.44*Math.PI/180));var phi=lat*Math.PI/180;var cosw=(Math.sin(-0.833*Math.PI/180)-Math.sin(phi)*Math.sin(dec))/(Math.cos(phi)*Math.cos(dec));if(cosw>1)return null;if(cosw<-1)return {all:true};var w=Math.acos(cosw)*180/Math.PI/360;var rise=Jt-w,set=Jt+w;function toHM(j){var ms=Date.UTC(2000,0,1,12)+j*864e5;return new Date(ms).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Helsinki'});}return {rise:toHM(rise),set:toHM(set),hours:Math.round(w*2*24*10)/10};}
 
 // Aurora canvas
-(function(){var c=document.getElementById('aurora'),ctx=c.getContext('2d'),W,H,t=0,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function size(){W=c.width=c.clientWidth*devicePixelRatio;H=c.height=c.clientHeight*devicePixelRatio;}size();addEventListener('resize',size);
+(function(){var c=document.getElementById('aurora'),ctx=c.getContext('2d'),sc=document.getElementById('stars'),sctx=sc.getContext('2d'),SW,SH,W,H,t=0,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function size(){W=c.width=c.clientWidth*devicePixelRatio;H=c.height=c.clientHeight*devicePixelRatio;SW=sc.width=sc.clientWidth*devicePixelRatio;SH=sc.height=sc.clientHeight*devicePixelRatio;}size();addEventListener('resize',size);
   var stars=[];for(var i=0;i<90;i++)stars.push([Math.random(),Math.random()*0.7,Math.random()*1.4+0.4,Math.random()*6.28]);
   function band(y0,amp,hue,alpha,speed,phase){ctx.beginPath();for(var x=0;x<=W;x+=W/40){var y=y0+Math.sin(x/W*4+t*speed+phase)*amp+Math.sin(x/W*9-t*speed*1.3)*amp*0.4;ctx.lineTo(x,y);}ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();var g=ctx.createLinearGradient(0,y0-amp,0,y0+amp*3);g.addColorStop(0,'hsla('+hue+',85%,65%,0)');g.addColorStop(0.35,'hsla('+hue+',85%,62%,'+alpha+')');g.addColorStop(1,'hsla('+hue+',85%,55%,0)');ctx.fillStyle=g;ctx.fill();}
   function draw(){ctx.clearRect(0,0,W,H);var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#071022');g.addColorStop(1,'#0E1B2E');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#F6F3EC';stars.forEach(function(s){var a=0.35+0.45*Math.abs(Math.sin(t*0.6+s[3]));ctx.globalAlpha=a;ctx.beginPath();ctx.arc(s[0]*W,s[1]*H,s[2]*devicePixelRatio*0.7,0,6.28);ctx.fill();});ctx.globalAlpha=1;
-    ctx.globalCompositeOperation='lighter';try{ctx.filter='blur('+Math.round(18*devicePixelRatio)+'px)';}catch(e){}band(H*0.28,H*0.06,155,0.55,0.5,0);band(H*0.36,H*0.08,170,0.35,0.35,2);band(H*0.22,H*0.05,300,0.22,0.42,4);try{ctx.filter='none';}catch(e){}ctx.globalCompositeOperation='source-over';
+    sctx.clearRect(0,0,SW,SH);sctx.fillStyle='#F6F3EC';stars.forEach(function(s){var a=0.35+0.45*Math.abs(Math.sin(t*0.6+s[3]));sctx.globalAlpha=a;sctx.beginPath();sctx.arc(s[0]*SW,s[1]*SH,s[2]*devicePixelRatio*0.7,0,6.28);sctx.fill();});sctx.globalAlpha=1;
+    ctx.globalCompositeOperation='lighter';band(H*0.16,H*0.04,155,0.38,0.5,0);band(H*0.22,H*0.05,170,0.24,0.35,2);band(H*0.12,H*0.035,300,0.14,0.42,4);ctx.globalCompositeOperation='source-over';
     if(!reduce){t+=0.008;requestAnimationFrame(draw);}}
   draw();})();
 
