@@ -25,10 +25,10 @@
   button{font:inherit;color:inherit}
 
   /* hero */
-  .hero{position:relative;height:min(52vh,430px);min-height:360px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px calc(28px);isolation:isolate}
+  .hero{position:relative;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;padding:calc(72px + var(--sat)) 24px 34px;isolation:isolate}
   .hero #stars{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
   .hero #aurora{position:absolute;inset:-30px;width:calc(100% + 60px);height:calc(100% + 60px);z-index:-1;filter:blur(14px) saturate(1.1);opacity:.75}
-  .hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:55%;background:linear-gradient(180deg,rgba(14,27,46,0) 0%,rgba(14,27,46,.85) 60%,var(--night) 100%);z-index:-1}
+  .hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:28%;background:linear-gradient(180deg,rgba(14,27,46,0) 0%,rgba(14,27,46,.85) 60%,var(--night) 100%);z-index:-1}
   .hero .eyebrow{color:var(--snow2);font-weight:700;font-size:14px}
   .hero .num{font-size:clamp(96px,30vw,150px);line-height:.9;color:var(--snow);margin:6px 0 2px}
   .hero .num small{font-size:.26em;font-weight:500;letter-spacing:0;color:var(--gold);margin-left:8px;font-variation-settings:"SOFT" 100,"opsz" 24}
@@ -122,7 +122,7 @@
   .spacer{height:28px}
   .snowfall{position:fixed;inset:0;pointer-events:none;z-index:4}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-  @media (min-width:700px){.hero{height:560px}.hero .top,.hero .inner{max-width:640px;margin-left:auto;margin-right:auto;left:0;right:0}}
+  @media (min-width:700px){.hero .top,.hero .inner{max-width:640px;margin-left:auto;margin-right:auto;left:0;right:0}}
 </style>
 </head>
 <body>
@@ -217,7 +217,7 @@ function sunTimes(dateIso,lat,lon){var d=new Date(dateIso+'T12:00:00Z');var n=Ma
   function band(y0,amp,hue,alpha,speed,phase){ctx.beginPath();for(var x=0;x<=W;x+=W/40){var y=y0+Math.sin(x/W*4+t*speed+phase)*amp+Math.sin(x/W*9-t*speed*1.3)*amp*0.4;ctx.lineTo(x,y);}ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();var g=ctx.createLinearGradient(0,y0-amp,0,y0+amp*3);g.addColorStop(0,'hsla('+hue+',85%,65%,0)');g.addColorStop(0.35,'hsla('+hue+',85%,62%,'+alpha+')');g.addColorStop(1,'hsla('+hue+',85%,55%,0)');ctx.fillStyle=g;ctx.fill();}
   function draw(){ctx.clearRect(0,0,W,H);var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#071022');g.addColorStop(1,'#0E1B2E');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
     sctx.clearRect(0,0,SW,SH);sctx.fillStyle='#F6F3EC';stars.forEach(function(s){var a=0.35+0.45*Math.abs(Math.sin(t*0.6+s[3]));sctx.globalAlpha=a;sctx.beginPath();sctx.arc(s[0]*SW,s[1]*SH,s[2]*devicePixelRatio*0.7,0,6.28);sctx.fill();});sctx.globalAlpha=1;
-    ctx.globalCompositeOperation='lighter';band(H*0.16,H*0.04,155,0.38,0.5,0);band(H*0.22,H*0.05,170,0.24,0.35,2);band(H*0.12,H*0.035,300,0.14,0.42,4);ctx.globalCompositeOperation='source-over';
+    ctx.globalCompositeOperation='lighter';band(H*0.34,H*0.07,155,0.42,0.5,0);band(H*0.44,H*0.08,170,0.26,0.35,2);band(H*0.26,H*0.05,300,0.16,0.42,4);ctx.globalCompositeOperation='source-over';
     if(!reduce){t+=0.008;requestAnimationFrame(draw);}}
   draw();})();
 
