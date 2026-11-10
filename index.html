@@ -120,6 +120,21 @@
   .loading{padding:40px 20px;text-align:center;color:var(--snow2);font-weight:700}
   .err{color:#FFB4C4;font-weight:700}
   .spacer{height:28px}
+  .live-btn{display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:8px 14px 8px 12px;border-radius:99px;border:1px solid rgba(110,243,181,.45);background:rgba(110,243,181,.12);color:var(--aurora);font-weight:800;font-size:13px;cursor:pointer}
+  .live-btn i{width:8px;height:8px;border-radius:50%;background:#FF5A6E;box-shadow:0 0 0 0 rgba(255,90,110,.6);animation:pulse 1.6s infinite;font-style:normal}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,90,110,.6)}70%{box-shadow:0 0 0 8px rgba(255,90,110,0)}100%{box-shadow:0 0 0 0 rgba(255,90,110,0)}}
+  .ticket.live{cursor:pointer;border-color:rgba(110,243,181,.45)}
+  .ticket.live small em{font-style:normal;color:var(--aurora)}
+  .sheet{position:fixed;inset:0;z-index:20;display:none;background:rgba(5,10,20,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:flex-end;justify-content:center}
+  .sheet.on{display:flex}
+  .sheet .panel{width:100%;max-width:640px;background:var(--night);border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;padding:18px 16px calc(18px + var(--sab));animation:up .25s ease-out}
+  @keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+  .sheet .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px}
+  .sheet .head b{font-family:Fraunces,serif;font-weight:600;font-size:22px;letter-spacing:-.01em}
+  .sheet .head button{background:rgba(246,243,236,.1);border:0;border-radius:99px;width:34px;height:34px;font-size:18px;cursor:pointer}
+  .sheet .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000}
+  .sheet iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .sheet .alt{display:block;text-align:center;margin-top:12px;font-weight:800;font-size:14px;color:var(--snow2);text-decoration:none}
   .snowfall{position:fixed;inset:0;pointer-events:none;z-index:4}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   @media (min-width:700px){.hero .top,.hero .inner{max-width:640px;margin-left:auto;margin-right:auto;left:0;right:0}}
@@ -174,6 +189,13 @@
   </div>
 </section>
 
+<div class="sheet" id="live" role="dialog" aria-modal="true" aria-label="Northern Lights live">
+  <div class="panel">
+    <div class="head"><b>Aurora sky, live from Rovaniemi</b><button type="button" id="live-close" aria-label="Close">✕</button></div>
+    <div class="vid" id="live-vid"></div>
+    <a class="alt" id="live-yt" href="#" target="_blank" rel="noopener">Not playing? Open in YouTube</a>
+  </div>
+</div>
 <div id="loading" class="loading" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--night);z-index:9">Warming up the sleigh...</div>
 
 <nav>
@@ -231,11 +253,22 @@ function sunTimes(dateIso,lat,lon){var d=new Date(dateIso+'T12:00:00Z');var n=Ma
     for(var i=0;i<N;i++){var f=flakes[i];f.y+=f.v;f.x+=Math.sin(t*2+f.d)*f.s;if(f.y>H+10||f.x<-10||f.x>W+10)flakes[i]=mk(true);ctx.globalAlpha=f.a;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.28);ctx.fill();}
     ctx.globalAlpha=1;requestAnimationFrame(draw);}
   var hidden=false;document.addEventListener('visibilitychange',function(){hidden=document.hidden;});draw();})();
+var LIVE_URL='https://www.youtube.com/live/ccTVAhJU5lg';
+function ytId(u){var m=String(u||'').match(/(?:live\/|v=|youtu\.be\/|embed\/)([\w-]{11})/);return m?m[1]:null;}
+function openLive(){var id=ytId(LIVE_URL);var box=document.getElementById('live-vid');document.getElementById('live-yt').href=LIVE_URL;
+  box.innerHTML=id?'<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&mute=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Northern Lights live"></iframe>':'';
+  document.getElementById('live').classList.add('on');}
+function closeLive(){document.getElementById('live').classList.remove('on');document.getElementById('live-vid').innerHTML='';}
+document.getElementById('live-close').addEventListener('click',closeLive);
+document.getElementById('live').addEventListener('click',function(e){if(e.target.id==='live')closeLive();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLive();});
+function isAurora(s){return /northern|aurora/i.test(s||'');}
 var target=null;
 function tick(){if(!target)return;var diff=Math.max(0,target-Date.now());var s=Math.floor(diff/1000);var d=Math.floor(s/86400);document.getElementById('cd-d').textContent=d;document.getElementById('cd-unit').textContent=d===1?'day':'days';document.getElementById('cd-h').textContent=pad(Math.floor(s%86400/3600));document.getElementById('cd-m').textContent=pad(Math.floor(s%3600/60));document.getElementById('cd-s').textContent=pad(s%60);if(diff===0){document.getElementById('eyebrow').textContent='We are on our way';document.getElementById('cd-text').textContent='Have the best trip 🎉';}}
 
 function render(D){
   var c=D.config,start=iso(c.start_date),end=iso(c.end_date);
+  if(c.aurora_live_url)LIVE_URL=c.aurora_live_url;
   document.getElementById('loading').style.display='none';
   document.getElementById('dates').textContent=fmt(start,{day:'numeric',month:'short'})+' to '+fmt(end,{day:'numeric',month:'short'});
   var tgt=c.countdown_target&&!isNaN(new Date(c.countdown_target).getTime())?new Date(c.countdown_target):new Date(start+'T12:20:00+01:00');
@@ -267,8 +300,9 @@ function render(D){
     document.getElementById('daybox').innerHTML='<div class="big">'+icon(d.daytime)+'</div><h3>'+esc(short(d.daytime))+'</h3><div class="when">'+fmt(d.date,{weekday:'long',day:'numeric',month:'long'})+'</div>'
       +(tag(d.daytime)?'<div class="tag">'+esc(tag(d.daytime))+'</div>':'')
       +'<div class="slots"><div class="slot"><div class="ic">'+icon(d.daytime)+'</div><div><small>Daytime</small><b>'+esc(short(d.daytime))+'</b></div></div>'
-      +(d.evening&&d.evening!=='-'?'<div class="slot"><div class="ic">'+icon(d.evening)+'</div><div><small>Evening'+(d.start_time?' · '+esc(d.start_time):'')+'</small><b>'+esc(short(d.evening))+'</b></div></div>':'')+'</div>'
+      +(d.evening&&d.evening!=='-'?'<div class="slot"><div class="ic">'+icon(d.evening)+'</div><div><small>Evening'+(d.start_time?' · '+esc(d.start_time):'')+'</small><b>'+esc(short(d.evening))+'</b>'+(isAurora(d.evening)?'<br><button type="button" class="live-btn" data-live><i></i>Watch the sky live</button>':'')+'</div></div>':'')+'</div>'
       +'<div class="sun">'+sunHtml+'</div>';
+    var lb=document.querySelector('#daybox [data-live]');if(lb)lb.addEventListener('click',openLive);
     btns[i]&&btns[i].scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
   tl.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){showDay(+b.dataset.i);});});
   showDay(sel);
@@ -277,7 +311,8 @@ function render(D){
 
   // Tickets
   var seen={},acts=D.activities.filter(function(a){return a.date;}).map(function(a){a.date=iso(a.date);a.name=short(a.activity.split(',')[0]);return a;}).filter(function(a){if(seen[a.name])return false;seen[a.name]=1;return true;}).sort(function(a,b){return a.date<b.date?-1:1;});
-  document.getElementById('act').innerHTML=acts.map(function(a){return '<div class="ticket"><div class="day-pill">'+fmt(a.date,{weekday:'short'})+'</div><div class="ic">'+icon(a.name)+'</div><div><b>'+esc(a.name)+'</b><small>'+fmt(a.date,{weekday:'long'})+(a.time_of_day?', '+esc(a.time_of_day):'')+(tag(a.name)?' · '+esc(tag(a.name)):'')+'</small></div></div>';}).join('');
+  document.getElementById('act').innerHTML=acts.map(function(a){var lv=isAurora(a.name);return '<div class="ticket'+(lv?' live':'')+'"'+(lv?' role="button" tabindex="0" data-live':'')+'><div class="day-pill">'+fmt(a.date,{weekday:'short'})+'</div><div class="ic">'+icon(a.name)+'</div><div><b>'+esc(a.name)+'</b><small>'+fmt(a.date,{weekday:'long'})+(a.time_of_day?', '+esc(a.time_of_day):'')+(lv?' · <em>● Tap to watch the sky live</em>':(tag(a.name)?' · '+esc(tag(a.name)):''))+'</small></div></div>';}).join('');
+  document.querySelectorAll('#act [data-live]').forEach(function(el){el.addEventListener('click',openLive);el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openLive();}});});
   var rest=D.restaurants.filter(function(r){return r.planned_date&&!/option/i.test(r.status||'');}).map(function(r){var m=(r.moment||'').toLowerCase();return {d:iso(r.planned_date),ic:m.indexOf('lunch')>-1?'🥪':'🍽️',t:r.restaurant,s:fmt(iso(r.planned_date),{weekday:'long'})+' '+(m.indexOf('lunch')>-1?'lunch':'dinner')};});
   days.forEach(function(d){if(/farewell/i.test(d.evening||'')&&!rest.some(function(f){return f.d===d.date;}))rest.push({d:d.date,ic:'🥂',t:'Farewell dinner',s:fmt(d.date,{weekday:'long'})+' · restaurant still to pick'});});
   rest.sort(function(a,b){return a.d<b.d?-1:1;});
